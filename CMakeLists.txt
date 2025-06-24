@@ -18,12 +18,12 @@ add_subdirectory(libs)
 
 # Source files for the library
 set(LIB_SOURCES
-    # src/IdGenerator.cpp
+    src/Uuid.cpp
 )
 
 # Header files for the library (for IDE organization)
 set(LIB_HEADERS
-    # include/velecs/common/IdGenerator.hpp
+    include/velecs/common/Uuid.hpp
 )
 
 # Always build the library
