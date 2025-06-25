@@ -23,6 +23,8 @@ set(LIB_SOURCES
 
 # Header files for the library (for IDE organization)
 set(LIB_HEADERS
+    include/velecs/common/Event.hpp
+
     include/velecs/common/Uuid.hpp
     include/velecs/common/NameUuidRegistry.hpp
 )
