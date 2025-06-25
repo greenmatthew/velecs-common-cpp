@@ -13,6 +13,7 @@
 #include <vector>
 #include <functional>
 #include <algorithm>
+#include <atomic>
 
 namespace velecs::common {
 
@@ -76,9 +77,11 @@ public:
     /// @param callback The function to be called when this event is invoked
     /// @return Handle that can be used to remove this specific callback later
     /// @note The callback will be stored and called in the order it was added
+    /// @note Handle generation is thread-safe using atomic operations
     Handle Add(const Callback& callback)
     {
-        Handle handle = _nextHandle++;
+        static std::atomic<size_t> globalHandleCounter{1};
+        Handle handle = globalHandleCounter.fetch_add(1);
         _callbacks.push_back({handle, callback});
         return handle;
     }
@@ -119,10 +122,10 @@ public:
     
     /// @brief Removes all registered callback functions from this event
     /// @note After calling this method, invoking the event will have no effect until new callbacks are added
+    /// @note Handle counter is not reset to ensure uniqueness across all Event instances
     void Clear()
     {
         _callbacks.clear();
-        _nextHandle = 1; // Reset handle counter
     }
     
     /// @brief Invokes all registered callback functions with the provided arguments
@@ -155,9 +158,6 @@ private:
 
     /// @brief Container storing all registered callback functions with their handles
     std::vector<CallbackEntry> _callbacks;
-    
-    /// @brief Counter for generating unique handles
-    Handle _nextHandle = 1;
 
     // Private Methods
 };
