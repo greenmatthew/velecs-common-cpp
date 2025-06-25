@@ -49,6 +49,14 @@ public:
     /// @brief Default constructor.
     NameUuidRegistry() = default;
 
+    // Explicitly delete copy operations to prevent unique_ptr copy attempts
+    NameUuidRegistry(const NameUuidRegistry&) = delete;
+    NameUuidRegistry& operator=(const NameUuidRegistry&) = delete;
+
+    // Allow move operations 
+    NameUuidRegistry(NameUuidRegistry&&) = default;
+    NameUuidRegistry& operator=(NameUuidRegistry&&) = default;
+
     /// @brief Default deconstructor.
     ~NameUuidRegistry() = default;
 
