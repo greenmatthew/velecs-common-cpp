@@ -121,7 +121,7 @@ public:
     /// @param uuid UUID of the item to retrieve
     /// @param outItem Reference to store the item if found
     /// @return true if item was found, false otherwise
-    bool TryGet(const Uuid& uuid, T& outItem)
+    bool TryGet(const Uuid& uuid, T& outItem) const
     {
         auto it = _items.find(uuid);
         if (it != _items.end())
@@ -138,7 +138,7 @@ public:
     /// @param outItem Reference to store the item if found
     /// @param outName Reference to store the name if found
     /// @return true if item was found, false otherwise
-    bool TryGet(const Uuid& uuid, T& outItem, std::string& outName)
+    bool TryGet(const Uuid& uuid, T& outItem, std::string& outName) const
     {
         auto itemIt = _items.find(uuid);
         if (itemIt != _items.end())
@@ -161,7 +161,7 @@ public:
     /// @param name Name of the item to retrieve
     /// @param outItem Reference to store the item if found
     /// @return true if item was found, false otherwise
-    bool TryGet(const std::string& name, T& outItem)
+    bool TryGet(const std::string& name, T& outItem) const
     {
         auto it = _nameToUuid.find(name);
         if (it != _nameToUuid.end()) {
@@ -176,7 +176,7 @@ public:
     /// @param outItem Reference to store the item if found
     /// @param outUuid Reference to store the UUID if found
     /// @return true if item was found, false otherwise
-    bool TryGet(const std::string& name, T& outItem, Uuid& outUuid)
+    bool TryGet(const std::string& name, T& outItem, Uuid& outUuid) const
     {
         auto it = _nameToUuid.find(name);
         if (it != _nameToUuid.end())
@@ -191,7 +191,7 @@ public:
     /// @param name Name to look up
     /// @param outUuid Reference to store the UUID if found
     /// @return true if name was found, false otherwise
-    bool TryGetUuid(const std::string& name, Uuid& outUuid)
+    bool TryGetUuid(const std::string& name, Uuid& outUuid) const
     {
         auto it = _nameToUuid.find(name);
         if (it != _nameToUuid.end())
@@ -207,7 +207,7 @@ public:
     /// @param outName Reference to store the name if found
     /// @return true if UUID was found, false otherwise
     /// @note This operation is O(n) as it requires searching through name mappings
-    bool TryGetName(const Uuid& uuid, std::string& outName)
+    bool TryGetName(const Uuid& uuid, std::string& outName) const
     {
         for (const auto& [name, nameUuid] : _nameToUuid)
         {
