@@ -187,6 +187,119 @@ public:
         return false;
     }
 
+    /// @brief Attempts to retrieve raw pointer by UUID
+    /// @tparam U Type pointed to by the stored pointer type
+    /// @param uuid UUID of the item to retrieve
+    /// @param outItem Reference to store raw pointer if found
+    /// @return true if item was found, false otherwise
+    /// @note Only available for unique_ptr, shared_ptr, and raw pointer types
+    template<typename U>
+    std::enable_if_t<
+        std::is_same_v<T, std::unique_ptr<U>> || 
+        std::is_same_v<T, std::shared_ptr<U>> || 
+        std::is_same_v<T, U*>, 
+        bool
+    > TryGetRef(const Uuid& uuid, U*& outItem) const
+    {
+        auto it = _items.find(uuid);
+        if (it != _items.end())
+        {
+            // For unique_ptr
+            if constexpr (std::is_same_v<T, std::unique_ptr<U>>) outItem = it->second.get();
+            // For shared_ptr
+            else if constexpr (std::is_same_v<T, std::shared_ptr<U>>) outItem = it->second.get();
+            // For raw pointers
+            else if constexpr (std::is_same_v<T, U*>) outItem = it->second;
+            return true;
+        }
+        return false;
+    }
+
+    /// @brief Attempts to retrieve raw pointer and name by UUID
+    /// @tparam U Type pointed to by the stored pointer type
+    /// @param uuid UUID of the item to retrieve
+    /// @param outItem Reference to store raw pointer if found
+    /// @param outName Reference to store the name if found
+    /// @return true if item was found, false otherwise
+    /// @note Only available for unique_ptr, shared_ptr, and raw pointer types
+    /// @note This operation is O(n) as it requires searching through name mappings
+    template<typename U>
+    std::enable_if_t<
+        std::is_same_v<T, std::unique_ptr<U>> || 
+        std::is_same_v<T, std::shared_ptr<U>> || 
+        std::is_same_v<T, U*>, 
+        bool
+    > TryGetRef(const Uuid& uuid, U*& outItem, std::string& outName) const
+    {
+        auto itemIt = _items.find(uuid);
+        if (itemIt != _items.end())
+        {
+            // Need to find the name by searching for the UUID value
+            for (const auto& [name, nameUuid] : _nameToUuid)
+            {
+                if (nameUuid == uuid)
+                {
+                    // For unique_ptr
+                    if constexpr (std::is_same_v<T, std::unique_ptr<U>>) outItem = itemIt->second.get();
+                    // For shared_ptr
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<U>>) outItem = itemIt->second.get();
+                    // For raw pointers
+                    else if constexpr (std::is_same_v<T, U*>) outItem = itemIt->second;
+                    
+                    outName = name;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /// @brief Attempts to retrieve raw pointer by name
+    /// @tparam U Type pointed to by the stored pointer type
+    /// @param name Name of the item to retrieve
+    /// @param outItem Reference to store raw pointer if found
+    /// @return true if item was found, false otherwise
+    /// @note Only available for unique_ptr, shared_ptr, and raw pointer types
+    template<typename U>
+    std::enable_if_t<
+        std::is_same_v<T, std::unique_ptr<U>> || 
+        std::is_same_v<T, std::shared_ptr<U>> || 
+        std::is_same_v<T, U*>, 
+        bool
+    > TryGetRef(const std::string& name, U*& outItem) const
+    {
+        auto it = _nameToUuid.find(name);
+        if (it != _nameToUuid.end()) {
+            auto uuid = it->second;
+            return TryGetRef(uuid, outItem);
+        }
+        return false;
+    }
+
+    /// @brief Attempts to retrieve raw pointer and UUID by name
+    /// @tparam U Type pointed to by the stored pointer type
+    /// @param name Name of the item to retrieve
+    /// @param outItem Reference to store raw pointer if found
+    /// @param outUuid Reference to store the UUID if found
+    /// @return true if item was found, false otherwise
+    /// @note Only available for unique_ptr, shared_ptr, and raw pointer types
+    template<typename U>
+    std::enable_if_t<
+        std::is_same_v<T, std::unique_ptr<U>> || 
+        std::is_same_v<T, std::shared_ptr<U>> || 
+        std::is_same_v<T, U*>, 
+        bool
+    > TryGetRef(const std::string& name, U*& outItem, Uuid& outUuid) const
+    {
+        auto it = _nameToUuid.find(name);
+        if (it != _nameToUuid.end())
+        {
+            outUuid = it->second;
+            return TryGetRef(outUuid, outItem);
+        }
+        return false;
+    }
+
     /// @brief Attempts to retrieve the UUID for a given name
     /// @param name Name to look up
     /// @param outUuid Reference to store the UUID if found
