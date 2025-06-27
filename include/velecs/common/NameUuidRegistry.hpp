@@ -38,6 +38,11 @@ namespace velecs::common {
 /// ActionProfile* profile = nullptr;
 /// if (profiles.TryGetRef("PlayerProfile", profile)) { /* use profile */ }
 /// if (profiles.TryGetRef(uuid, profile)) { /* use profile */ }
+/// 
+/// // Iterate over all items
+/// for (const auto& [uuid, name, item] : profiles) {
+///     // use uuid, name, and item
+/// }
 /// @endcode
 template<typename T>
 class NameUuidRegistry {
@@ -45,6 +50,79 @@ public:
     // Enums
 
     // Public Fields
+
+    /// @brief Structure representing a registry entry with UUID, name, and item reference
+    struct RegistryEntry {
+        const Uuid& uuid;
+        const std::string& name;
+        T& item;
+    };
+
+    /// @brief Custom iterator for iterating over registry entries
+    class iterator {
+    private:
+        typename std::unordered_map<Uuid, std::unique_ptr<T>>::const_iterator _itemIt;
+        const std::unordered_map<std::string, Uuid>* _nameToUuid;
+        mutable std::string _currentName; // Cache for performance
+
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = RegistryEntry;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const RegistryEntry*;
+        using reference = const RegistryEntry&;
+
+        /// @brief Constructor for iterator
+        /// @param itemIt Iterator to the items map
+        /// @param nameToUuid Pointer to the name-to-UUID mapping
+        iterator(typename std::unordered_map<Uuid, std::unique_ptr<T>>::const_iterator itemIt,
+                 const std::unordered_map<std::string, Uuid>* nameToUuid)
+            : _itemIt(itemIt), _nameToUuid(nameToUuid) {}
+
+        /// @brief Dereference operator
+        /// @return RegistryEntry containing UUID, name, and item reference
+        /// @note This operation is O(n) due to name lookup - could be optimized with reverse map
+        RegistryEntry operator*() const {
+            const auto& uuid = _itemIt->first;
+            
+            // Find name (this is O(n) - could be optimized with reverse map)
+            for (const auto& [name, nameUuid] : *_nameToUuid) {
+                if (nameUuid == uuid) {
+                    return { uuid, name, *_itemIt->second };
+                }
+            }
+            throw std::runtime_error("Inconsistent registry state");
+        }
+
+        /// @brief Pre-increment operator
+        /// @return Reference to this iterator after incrementing
+        iterator& operator++() { 
+            ++_itemIt; 
+            return *this; 
+        }
+
+        /// @brief Post-increment operator
+        /// @return Copy of iterator before incrementing
+        iterator operator++(int) {
+            iterator temp = *this;
+            ++_itemIt;
+            return temp;
+        }
+
+        /// @brief Inequality comparison operator
+        /// @param other Iterator to compare against
+        /// @return true if iterators are not equal
+        bool operator!=(const iterator& other) const { 
+            return _itemIt != other._itemIt; 
+        }
+
+        /// @brief Equality comparison operator
+        /// @param other Iterator to compare against
+        /// @return true if iterators are equal
+        bool operator==(const iterator& other) const { 
+            return _itemIt == other._itemIt; 
+        }
+    };
 
     // Constructors and Destructors
 
@@ -63,6 +141,18 @@ public:
     ~NameUuidRegistry() = default;
 
     // Public Methods
+
+    /// @brief Returns iterator to the beginning of the registry
+    /// @return Iterator pointing to the first entry
+    iterator begin() const {
+        return iterator(_items.begin(), &_nameToUuid);
+    }
+
+    /// @brief Returns iterator to the end of the registry
+    /// @return Iterator pointing past the last entry
+    iterator end() const {
+        return iterator(_items.end(), &_nameToUuid);
+    }
 
     /// @brief Adds a unique_ptr item to the registry with the given name
     /// @param name Unique name for the item
