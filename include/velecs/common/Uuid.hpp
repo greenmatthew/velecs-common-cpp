@@ -63,10 +63,10 @@ public:
     static Uuid GenerateSequential();
 
     /// @brief Generate a deterministic UUID from a numeric seed
-    /// @param seed The numeric seed for deterministic generation
+    /// @param seed The numeric seed for deterministic generation (32-bit)
     /// @return A UUID that's always the same for the same seed value
     /// @note Uses Mersenne Twister engine seeded with the provided value
-    static Uuid GenerateFromSeed(uint64_t seed);
+    static Uuid GenerateFromSeed(uint32_t seed);
 
     /// @brief Generate a deterministic UUID from a string seed (name-based UUID v5)
     /// @param seed The string seed (any length, e.g., "MyGameWorld123")
@@ -77,7 +77,7 @@ public:
     /// @brief Generate a deterministic UUID by hashing string to numeric seed
     /// @param seed The string seed to hash into a numeric value
     /// @return A UUID generated from the hashed numeric seed
-    /// @note Hashes string to uint64_t, then uses GenerateFromSeed()
+    /// @note Hashes string to size_t, then truncates to uint32_t for GenerateFromSeed()
     /// @warning Different from GenerateFromString() - may have hash collisions
     static Uuid GenerateFromStringHash(const std::string& seed);
 

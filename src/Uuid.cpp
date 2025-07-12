@@ -41,17 +41,17 @@ Uuid Uuid::GenerateRandom()
 Uuid Uuid::GenerateSequential()
 {
     // Thread-safe atomic counter for sequential IDs
-    static std::atomic<uint64_t> counter{1};
+    static std::atomic<uint32_t> counter{1};
     
     // Get next sequential number
-    uint64_t id = counter.fetch_add(1);
+    uint32_t id = counter.fetch_add(1);
     
     // Create UUID with sequential number in the least significant bits
     // Format: 00000000-0000-0000-XXXX-XXXXXXXXXXXX where X is the counter
     std::array<uint8_t, 16> bytes{};
     
-    // Put the counter in the last 8 bytes (big-endian)
-    for (int i = 0; i < 8; ++i) {
+    // Put the counter in the last 4 bytes (big-endian) since it's now 32-bit
+    for (int i = 0; i < 4; ++i) {
         bytes[15 - i] = static_cast<uint8_t>((id >> (i * 8)) & 0xFF);
     }
     
@@ -60,7 +60,7 @@ Uuid Uuid::GenerateSequential()
     return Uuid{uuid};
 }
 
-Uuid Uuid::GenerateFromSeed(uint64_t seed)
+Uuid Uuid::GenerateFromSeed(uint32_t seed)
 {
     // Create a seeded Mersenne Twister engine
     std::mt19937 engine(seed);
@@ -92,7 +92,10 @@ Uuid Uuid::GenerateFromStringHash(const std::string& seed)
 {
     // Hash the string to get a numeric seed
     std::hash<std::string> hasher;
-    uint64_t numericSeed = hasher(seed);
+    size_t hashValue = hasher(seed);
+    
+    // Convert to uint32_t - explicitly acknowledge potential truncation on 64-bit systems
+    uint32_t numericSeed = static_cast<uint32_t>(hashValue);
     
     // Use existing GenerateFromSeed method
     return GenerateFromSeed(numericSeed);
