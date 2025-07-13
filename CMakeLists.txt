@@ -18,11 +18,15 @@ add_subdirectory(libs/stduuid)
 
 # Source files for the library
 set(LIB_SOURCES
+    src/Paths.cpp
+
     src/Uuid.cpp
 )
 
 # Header files for the library (for IDE organization)
 set(LIB_HEADERS
+    include/velecs/common/Paths.hpp
+
     include/velecs/common/Event.hpp
 
     include/velecs/common/BitfieldEnum.hpp
