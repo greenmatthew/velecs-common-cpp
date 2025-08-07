@@ -35,6 +35,8 @@ set(LIB_SOURCES
 set(LIB_HEADERS
     include/velecs/common/Paths.hpp
 
+    include/velecs/common/Context.hpp
+
     include/velecs/common/Event.hpp
 
     include/velecs/common/BitfieldEnum.hpp
